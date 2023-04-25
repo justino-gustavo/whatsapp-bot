@@ -3,25 +3,39 @@ const qrCode = require("qrcode-terminal");
 
 // =============================================================================
 
-const storage = Object.create({});
+const useStorage = require("./utils/storage");
 
-function getStage({ from }) {
-	if (!storage[from]) {
-		storage[from] = {
-			stage: 0,
-			tree: 0,
-		};
-	}
-
-	return storage[from].stage;
-}
+// =============================================================================
 
 const stages = [
 	{
-		label: "Start",
-		exec({ from }) {
-			storage[from].stage = 1;
-			return "Olá, escolha uma opção:\n1 - Op 1\n2 - Op 2\n3 - Op 3";
+		id: "Iz1ai1dee",
+		message: {
+			body: "Olá",
+			options: [
+				{
+					label: "oi",
+					link: "dee1mooCh",
+				},
+				{
+					label: "again",
+					link: "dee1mooCh",
+				},
+			],
+		},
+		exec() {
+			console.log("olá");
+		},
+		entryPoint: true,
+	},
+	{
+		id: "dee1mooCh",
+		message: {
+			body: "test",
+			options: [],
+		},
+		exec() {
+			console.log("test");
 		},
 	},
 ];
@@ -34,22 +48,64 @@ const client = new Client({
 });
 
 client.on("qr", (code) => {
-	// on client generate QR Code display in terminal
+	console.log("Whatsapp need login.");
 	qrCode.generate(code, { small: true });
 });
 client.on("ready", () => {
 	console.log("Whatsapp is ready.");
 });
 
-client.on("message", (message) => {
-	const currentStage = getStage({ from: message.from });
+// =============================================================================
 
-	const messageResponse = stages[currentStage].exec({
-		from: message.from,
-	});
+client.on("message", ({ from, body }) => {
+	const storage = useStorage(from);
 
-	if (messageResponse) {
-		client.sendMessage(message.from, messageResponse);
+	if (!storage.get()) {
+		storage.set({
+			stage: stages.find(({ entryPoint }) => entryPoint).id,
+			step: 0,
+		});
+	}
+
+	var currentStage = stages.find(({ id }) => id === storage.get().stage);
+
+	if (currentStage && storage.get().step == 0) {
+		const reply = `${
+			currentStage.message.body
+		}\n${currentStage.message.options.map((item, index) => {
+			return `\n*[${index + 1}]* - ${item.label}`;
+		})}`;
+
+		client.sendMessage(from, reply);
+		storage.set({
+			...storage.get(),
+			step: 1,
+		});
+		currentStage.exec();
+	} else if (
+		currentStage.message.options[Number(body) - 1] &&
+		storage.get().step == 1
+	) {
+		storage.set({
+			...storage.set(),
+			stage: currentStage.message.options[Number(body) - 1].link,
+		});
+
+		currentStage = stages.find(({ id }) => id === storage.get().stage);
+
+		const reply = `${
+			currentStage.message.body
+		}\n${currentStage.message.options.map((item, index) => {
+			return `\n*[${index + 1}]* - ${item.label}`;
+		})}`;
+
+		client.sendMessage(from, reply);
+		currentStage.exec();
+	} else {
+		client.sendMessage(
+			from,
+			"Você digitou corretamente?\nNão consegui compreender."
+		);
 	}
 });
 

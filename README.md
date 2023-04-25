@@ -11,6 +11,5 @@ Precisa do Chrome ou Chromium instalado na máquina. Dê uma olhada na documenta
 
 1. Faça o clone do repositório em sua máquina.
 1. No terminal, execute `yarn install` ou `npm install`, na pasta do repositório.
-<!-- 1. Set yours task in _src/options/meus.yml_. -->
 1. Conecte-se pelo QRCode que aparecerá no terminal.
 1. Pronto!!! Já está rodando.

@@ -1,18 +1,10 @@
 {
-  "restartable": "rs",
-  "ignore": [
-    ".git/",
-    "node_modules/",
-    ".wwebjs_auth/"
-  ],
-  "verbose": false,
-  "execMap": {
-    "js": "node"
-  },
-  "events": {},
-  "watch": [
-    "src/",
-		"./"
-  ],
-  "ext": "js,json"
+	"restartable": "rs",
+	"ignore": [".git/", "node_modules/", ".wwebjs_auth/"],
+	"verbose": false,
+	"execMap": {
+		"js": "node"
+	},
+	"watch": ["src/", "./"],
+	"ext": "js,json"
 }

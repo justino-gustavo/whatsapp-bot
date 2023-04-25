@@ -3,42 +3,8 @@ const qrCode = require("qrcode-terminal");
 
 // =============================================================================
 
+const { stages, globalOptions } = require("./settings/stages.json");
 const useStorage = require("./utils/storage");
-
-// =============================================================================
-
-const stages = [
-	{
-		id: "Iz1ai1dee",
-		message: {
-			body: "Olá",
-			options: [
-				{
-					label: "oi",
-					link: "dee1mooCh",
-				},
-				{
-					label: "again",
-					link: "dee1mooCh",
-				},
-			],
-		},
-		exec() {
-			console.log("olá");
-		},
-		entryPoint: true,
-	},
-	{
-		id: "dee1mooCh",
-		message: {
-			body: "test",
-			options: [],
-		},
-		exec() {
-			console.log("test");
-		},
-	},
-];
 
 // =============================================================================
 
@@ -69,11 +35,13 @@ client.on("message", ({ from, body }) => {
 
 	var currentStage = stages.find(({ id }) => id === storage.get().stage);
 
-	if (currentStage && storage.get().step == 0) {
+	if (currentStage && storage.get().step === 0) {
 		const reply = `${
 			currentStage.message.body
 		}\n${currentStage.message.options.map((item, index) => {
 			return `\n*[${index + 1}]* - ${item.label}`;
+		})}${globalOptions.map((item) => {
+			return `\n*[${item.value}]* - ${item.label}`;
 		})}`;
 
 		client.sendMessage(from, reply);
@@ -81,26 +49,29 @@ client.on("message", ({ from, body }) => {
 			...storage.get(),
 			step: 1,
 		});
-		currentStage.exec();
+		eval(currentStage.exec);
 	} else if (
-		currentStage.message.options[Number(body) - 1] &&
+		(currentStage.message.options[Number(body) - 1] ||
+			globalOptions.find(({ value }) => value === body)) &&
 		storage.get().step == 1
 	) {
 		storage.set({
-			...storage.set(),
-			stage: currentStage.message.options[Number(body) - 1].link,
+			...storage.get(),
+			stage: globalOptions.find(({ value }) => value === body)
+				? globalOptions.find(({ value }) => value === body).link
+				: currentStage.message.options[Number(body) - 1].link,
 		});
 
 		currentStage = stages.find(({ id }) => id === storage.get().stage);
 
 		const reply = `${
 			currentStage.message.body
-		}\n${currentStage.message.options.map((item, index) => {
-			return `\n*[${index + 1}]* - ${item.label}`;
-		})}`;
+		}\n${currentStage.message.options.map(
+			(item, index) => `\n*[${index + 1}]* - ${item.label}`
+		)}${globalOptions.map((item) => `\n*[${item.value}]* - ${item.label}`)}`;
 
 		client.sendMessage(from, reply);
-		currentStage.exec();
+		eval(currentStage.exec);
 	} else {
 		client.sendMessage(
 			from,

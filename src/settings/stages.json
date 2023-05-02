@@ -27,5 +27,6 @@
 			"exec": "console.log('test');"
 		}
 	],
-	"globalOptions": [{ "label": "global", "link": "Iz1ai1dee", "value": "#" }]
+	"globalOptions": [{ "label": "global", "link": "Iz1ai1dee", "value": "#" }],
+	"errorMessage": "Não compreendi.\nDigitou corretamente?"
 }
